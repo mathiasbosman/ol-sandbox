@@ -5,11 +5,15 @@ import {Layer} from "ol/layer";
 import "./map.element.ts";
 import "./map-control.element.ts";
 import "./map-layer-wmts.element.ts";
+import "./map-layer-wms.element.ts";
+import "./map-layerpanel.element.ts";
 import {getWMTSLayer} from "../utils/geo-utils.ts";
 import {Task} from "@lit-labs/task";
 import {Control, ZoomToExtent} from "ol/control";
 import WMTS from "ol/source/WMTS";
 import {fromLonLat} from "ol/proj";
+import TileLayer from "ol/layer/Tile";
+import {OSM} from "ol/source";
 
 @customElement("geo-viewer")
 export class SandboxGeoViewer extends TailwindElement("") {
@@ -18,6 +22,12 @@ export class SandboxGeoViewer extends TailwindElement("") {
   private zoomToFlandersControl: Control | undefined = undefined;
 
   @state() layers: Layer[] = [];
+  @state() baseLayers: Layer[] = [
+    new TileLayer({
+      className: 'grayscale',
+      opacity: 0.6,
+      source: new OSM({wrapX: false})
+    })];
 
   private readonly getLayers = new Task(
       this,
@@ -29,7 +39,7 @@ export class SandboxGeoViewer extends TailwindElement("") {
             layerName: 'grb_bsk',
             matrixSet: 'GoogleMapsVL'
           });
-          this.layers.push(this.flanders);
+          this.baseLayers.push(this.flanders);
           // create "zoom to Flanders" control
           const globeIcon = document.createElement('div');
           globeIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mx-auto">' +
@@ -52,18 +62,17 @@ export class SandboxGeoViewer extends TailwindElement("") {
         initial: () => html`<p>loading..</p>`,
         pending: () => html`<p>loading..</p>`,
         error: (e: any) => html`<p>BOOM ${e}</p>`,
-        complete: () => html`
+        complete: () => html`<map-layerpanel></map-layerpanel>
           <sandbox-map class="h-screen w-full"
+                       .baseLayers="${this.baseLayers}"
                        .initialCenter="${fromLonLat([4.240528, 51.037861])}">
-            <map-layer-wmts
-                url="https://geo.api.vlaanderen.be/GRB/wmts?service=WMTS&request=getcapabilities"
-                layerName="grb_bsk"
-                matrixSet="GoogleMapsVL"></map-layer-wmts>
+            
             <map-layer-wmts
                 url="https://mercator.vlaanderen.be/raadpleegdienstenmercatorpubliek/gwc/service/wmts?service=WMTS&request=getcapabilities"
                 layerName="hh:hh_geluid_vliegver_2016" 
                 .opacity=${0.75}
                 matrixSet="WGS84VL"></map-layer-wmts>
+            <map-layer-wms url="https://ahocevar.com/geoserver/wms" layerName="topp:states"></map-layer-wms>
             <map-control .control="${this.zoomToFlandersControl}"></map-control>
           </sandbox-map>`
       })};`

@@ -19,7 +19,7 @@ export class SandboxMap extends TailwindElement(olStyles) {
   private defaultZoom = 9;
 
   @state()
-  public layers: Layer[] = [];
+  private layers: Layer[] = [];
   @property({type: Array})
   public baseLayers: Layer[] = [new TileLayer({
     className: 'grayscale',
