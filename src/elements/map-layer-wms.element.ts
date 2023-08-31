@@ -10,9 +10,6 @@ export class MapLayerWmsElement extends MapLayerElement {
   @property()
   url!: string;
 
-  @property()
-  layerName!: string;
-
 
   async getLayer(): Promise<Layer> {
     return this._getWMSLayer();
@@ -22,12 +19,10 @@ export class MapLayerWmsElement extends MapLayerElement {
     return new ImageLayer({
       source: new ImageWMS({
         url: this.url,
-        params: {'LAYERS': this.layerName},
+        params: {'LAYERS': this.identifier},
       })
     })
   }
-
-
 }
 
 declare global {

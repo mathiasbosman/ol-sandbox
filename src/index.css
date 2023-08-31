@@ -6,3 +6,9 @@
   @apply w-full;
   @apply h-screen;
 }
+
+.over {
+  border: 1px solid red;
+  border-radius: 5px;
+  border-bottom: 4px solid red;
+}

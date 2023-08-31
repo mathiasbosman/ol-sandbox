@@ -13,21 +13,14 @@ export class MapLayerWmtsElement extends MapLayerElement {
   url!: string;
 
   @property()
-  layerName!: string;
-
-  @property()
   matrixSet!: string;
 
-
-
   async getLayer(): Promise<Layer> {
-    const wmtsLayer = await this._getWMTSLayer({
+    return await this._getWMTSLayer({
       capabilitiesUrl: this.url,
-      layerName: this.layerName,
+      identifier: this.identifier,
       matrixSet: this.matrixSet
     });
-    wmtsLayer.setOpacity(this.opacity);
-    return wmtsLayer;
   }
 
    async _getWMTSLayer(layerinfo: WMTSLayerInfo): Promise<Layer<WMTS>> {
@@ -37,19 +30,19 @@ export class MapLayerWmtsElement extends MapLayerElement {
        .text(text => {
          const result = wmtsParser.read(text);
          return optionsFromCapabilities(result, {
-           layer: layerinfo.layerName,
+           layer: layerinfo.identifier,
            matrixSet: layerinfo.matrixSet,
          });
        });
        if (options == null) {
          throw new Error("Unable to get WMTS options");
        }
-       const layer = new TileLayer({source: new WMTS(options)});
-       return layer;
+       return new TileLayer({source: new WMTS(options)});
      } catch (error) {
        throw error;
      }
   }
+
 }
 
 declare global {

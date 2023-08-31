@@ -6,8 +6,22 @@ import WMTSCapabilities from "ol/format/WMTSCapabilities";
 
 export interface WMTSLayerInfo {
   capabilitiesUrl: string,
-  layerName: string,
+  identifier: string,
   matrixSet: string
+}
+
+export class SandboxLayer {
+  order?: number;
+  description?: string;
+  layerName: string;
+  layer: Layer;
+
+  constructor(layerName: string, layer: Layer, description: string, order: number = 0) {
+    this.order = order;
+    this.layerName = layerName;
+    this.layer = layer;
+    this.description = description;
+  }
 }
 
 export const wmtsParser = new WMTSCapabilities();
@@ -17,7 +31,7 @@ export function getWMTSLayer(layerinfo: WMTSLayerInfo): Promise<Layer<WMTS>> {
     .text(text => {
       const result = wmtsParser.read(text);
       return optionsFromCapabilities(result, {
-        layer: layerinfo.layerName,
+        layer: layerinfo.identifier,
         matrixSet: layerinfo.matrixSet,
       });
     })

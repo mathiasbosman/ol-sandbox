@@ -7,8 +7,17 @@
     <title>Vite + Lit + TS</title>
     <link rel="stylesheet" href="./src/index.css" />
     <script type="module" src="/src/elements/geo-viewer.ts"></script>
+    <script type="module" src="/src/elements/draggable-list.element.ts"></script>
   </head>
   <body class="h-full">
+  <!--
     <geo-viewer class="h-full w-full"></geo-viewer>
+    -->
+  <draggable-list>
+    <draggable-item><h1>Header 1</h1></draggable-item>
+    <draggable-item><h1>Header 2</h1></draggable-item>
+    <draggable-item><h1>Header 3</h1></draggable-item>
+    <draggable-item><h1>Header 4</h1></draggable-item>
+  </draggable-list>
   </body>
 </html>

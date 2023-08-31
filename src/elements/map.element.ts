@@ -1,4 +1,4 @@
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {css, html, TemplateResult} from "lit";
 import TileLayer from "ol/layer/Tile";
 import {OSM} from "ol/source";
@@ -9,17 +9,27 @@ import {Layer} from "ol/layer";
 import olStyles from 'ol/ol.css?inline';
 import {getTailwindCustomColor} from "../utils/style-utils.ts";
 import {Coordinate} from "openlayers";
+import {SandboxLayer} from "../utils/geo-utils.ts";
+import {LayerAddedEvent} from "./map-layer.element.ts";
 
+
+export class LayersChangedEvent extends Event {
+  readonly layers: SandboxLayer[];
+
+  constructor(layers: SandboxLayer[]) {
+    super('layers-changed', {bubbles: true});
+    this.layers = layers;
+  }
+}
 
 @customElement("sandbox-map")
 export class SandboxMap extends TailwindElement(olStyles) {
 
-  private mapContainer: HTMLElement;
-  private map: Map;
+  private readonly mapContainer: HTMLElement;
+  private readonly map: Map;
   private defaultZoom = 9;
 
-  @state()
-  private layers: Layer[] = [];
+  @property() private layers: SandboxLayer[] = [];
   @property({type: Array})
   public baseLayers: Layer[] = [new TileLayer({
     className: 'grayscale',
@@ -29,32 +39,33 @@ export class SandboxMap extends TailwindElement(olStyles) {
   @property()
   private initialCenter!:Coordinate;
 
-
   constructor() {
     super();
     this.map = new Map();
     this.mapContainer = document.createElement("div");
     this.mapContainer.style.width = "100%";
     this.mapContainer.style.height = "100%";
-  }
-
-  private _addMap() {
-    this.renderRoot?.querySelector("#map-container")?.appendChild(this.mapContainer)
+    this.map.setTarget(this.mapContainer);
   }
 
   async firstUpdated() {
-    this.map.setTarget(this.mapContainer);
-    this.map.setLayers([...this.baseLayers, ...this.layers]);
+    const olLayers = this.layers.map(l => l.layer);
+    this.map.setLayers([...this.baseLayers, ...olLayers]);
     this.map.setView(new View({
       center: this.initialCenter,
       zoom: this.defaultZoom
     }));
-    this._addMap();
+    this.renderRoot?.querySelector("#map-container")?.appendChild(this.mapContainer)
   }
 
-  addLayer(layer: Layer) {
-    this.layers.push(layer);
-    this.map.addLayer(layer);
+  addLayer(layer: SandboxLayer) {
+    this.layers = [...this.layers, layer];
+    this.map.addLayer(layer.layer);
+    this.dispatchEvent(new LayersChangedEvent(this.layers));
+  }
+
+  private _handleLayerAdded(event: LayerAddedEvent): void {
+    this.addLayer(event.layer);
   }
 
   getOlMap() {
@@ -63,7 +74,10 @@ export class SandboxMap extends TailwindElement(olStyles) {
 
   render(): TemplateResult {
     return html`
-      <div id="map-container" class="w-full h-screen"></div>`
+      <div id="map-container" @layer-added="${this._handleLayerAdded}">
+        <slot></slot>
+        <map-layer-panel .layers="${this.layers}"></map-layer-panel>
+      </div>`
   }
 
 

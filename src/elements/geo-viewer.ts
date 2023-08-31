@@ -6,10 +6,10 @@ import "./map.element.ts";
 import "./map-control.element.ts";
 import "./map-layer-wmts.element.ts";
 import "./map-layer-wms.element.ts";
-import "./map-layerpanel.element.ts";
-import {getWMTSLayer} from "../utils/geo-utils.ts";
+import "./map-layer-panel/map-layer-panel.element.ts";
+import {getWMTSLayer, SandboxLayer} from "../utils/geo-utils.ts";
 import {Task} from "@lit-labs/task";
-import {Control, ZoomToExtent} from "ol/control";
+import {Control, ScaleLine, ZoomToExtent} from "ol/control";
 import WMTS from "ol/source/WMTS";
 import {fromLonLat} from "ol/proj";
 import TileLayer from "ol/layer/Tile";
@@ -20,8 +20,11 @@ export class SandboxGeoViewer extends TailwindElement("") {
 
   private flanders: Layer<WMTS> | undefined = undefined;
   private zoomToFlandersControl: Control | undefined = undefined;
+  private scaleControl = new ScaleLine({
+    units: 'metric',
+  });
 
-  @state() layers: Layer[] = [];
+  @state() layers: SandboxLayer[] = [];
   @state() baseLayers: Layer[] = [
     new TileLayer({
       className: 'grayscale',
@@ -29,14 +32,14 @@ export class SandboxGeoViewer extends TailwindElement("") {
       source: new OSM({wrapX: false})
     })];
 
-  private readonly getLayers = new Task(
+  private readonly initMap = new Task(
       this,
       {
         task: async (): Promise<void> => {
           // fetch flanders layer via capabilities
           this.flanders = await getWMTSLayer({
             capabilitiesUrl: 'https://geo.api.vlaanderen.be/GRB/wmts?service=WMTS&request=getcapabilities',
-            layerName: 'grb_bsk',
+            identifier: 'grb_bsk',
             matrixSet: 'GoogleMapsVL'
           });
           this.baseLayers.push(this.flanders);
@@ -55,27 +58,31 @@ export class SandboxGeoViewer extends TailwindElement("") {
       }
   );
 
-
   render(): TemplateResult {
     return html`
-      ${this.getLayers.render({
+      ${this.initMap.render({
         initial: () => html`<p>loading..</p>`,
         pending: () => html`<p>loading..</p>`,
         error: (e: any) => html`<p>BOOM ${e}</p>`,
-        complete: () => html`<map-layerpanel></map-layerpanel>
+        complete: () => {
+          return html`
           <sandbox-map class="h-screen w-full"
                        .baseLayers="${this.baseLayers}"
                        .initialCenter="${fromLonLat([4.240528, 51.037861])}">
-            
             <map-layer-wmts
+                description="Geluidsoverlast vliegverkeer (2016)"
                 url="https://mercator.vlaanderen.be/raadpleegdienstenmercatorpubliek/gwc/service/wmts?service=WMTS&request=getcapabilities"
-                layerName="hh:hh_geluid_vliegver_2016" 
+                identifier="hh:hh_geluid_vliegver_2016"
                 .opacity=${0.75}
                 matrixSet="WGS84VL"></map-layer-wmts>
-            <map-layer-wms url="https://ahocevar.com/geoserver/wms" layerName="topp:states"></map-layer-wms>
+            <map-layer-wms url="https://ahocevar.com/geoserver/wms"
+                           description="Amerikaanse staten"
+                           identifier="topp:states"></map-layer-wms>
             <map-control .control="${this.zoomToFlandersControl}"></map-control>
+            <map-control .control="${this.scaleControl}"></map-control>
           </sandbox-map>`
-      })};`
+        }
+      })}`
   }
 }
 
