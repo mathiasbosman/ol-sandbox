@@ -7,17 +7,25 @@
     <title>Vite + Lit + TS</title>
     <link rel="stylesheet" href="./src/index.css" />
     <script type="module" src="/src/elements/geo-viewer.ts"></script>
-    <script type="module" src="/src/elements/draggable-list.element.ts"></script>
+    <script type="module" src="/src/elements/drag-element.ts"></script>
   </head>
   <body class="h-full">
   <!--
     <geo-viewer class="h-full w-full"></geo-viewer>
     -->
-  <draggable-list>
-    <draggable-item><h1>Header 1</h1></draggable-item>
-    <draggable-item><h1>Header 2</h1></draggable-item>
-    <draggable-item><h1>Header 3</h1></draggable-item>
-    <draggable-item><h1>Header 4</h1></draggable-item>
-  </draggable-list>
+  <div style="width: 300px">
+    <h3>Drag items to sort</h3>
+    <draggable-list id="my-list">
+      <draggable-item ref="you can pass whatever you like">
+        <div class="border border-amber-100 p-4 group">
+          <a href="#test">This is a link</a> <span class="tag"></span>
+        </div>
+      </draggable-item>
+      <draggable-item>B <span class="tag">2</span></draggable-item>
+      <draggable-item>C <span class="tag">3</span></draggable-item>
+      <draggable-item>D <span class="tag">4</span></draggable-item>
+      <draggable-item>E <span class="tag">5</span></draggable-item>
+    </draggable-list>
+  </div>
   </body>
 </html>
