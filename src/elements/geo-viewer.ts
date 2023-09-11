@@ -59,6 +59,8 @@ export class SandboxGeoViewer extends TailwindElement("") {
   );
 
   render(): TemplateResult {
+    //todo add components for loading and errors
+    //todo get layers from config
     return html`
       ${this.initMap.render({
         initial: () => html`<p>loading..</p>`,
