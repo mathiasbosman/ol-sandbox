@@ -81,6 +81,9 @@ export class SandboxMap extends TailwindElement(olStyles) {
   }
 
 
+  /**
+   * Somethings wrong here
+   */
   static styles = [
     ...super.styles,
     css`
